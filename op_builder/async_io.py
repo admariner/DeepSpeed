@@ -30,6 +30,8 @@ class AsyncIOBuilder(OpBuilder):
         return ['csrc/aio/py_lib', 'csrc/aio/common']
 
     def cxx_args(self):
+        CPU_ARCH = self.cpu_arch()
+        SIMD_WIDTH = self.simd_width()
         return [
             '-g',
             '-Wall',
@@ -38,10 +40,10 @@ class AsyncIOBuilder(OpBuilder):
             '-shared',
             '-fPIC',
             '-Wno-reorder',
-            '-march=native',
+            CPU_ARCH,
             '-fopenmp',
+            SIMD_WIDTH,
             '-laio',
-            self.simd_width()
         ]
 
     def extra_ldflags(self):
@@ -52,5 +54,6 @@ class AsyncIOBuilder(OpBuilder):
         aio_compatible = self.libraries_installed(aio_libraries)
         if not aio_compatible:
             self.warning(
-                f"{self.NAME} requires the libraries: {aio_libraries} but are missing.")
+                f"{self.NAME} requires the libraries: {aio_libraries} but are missing. Can be fixed by: `apt install libaio-dev`."
+            )
         return super().is_compatible() and aio_compatible
